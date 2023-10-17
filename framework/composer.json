@@ -1,0 +1,32 @@
+{
+    "name": "kalinin/framework",
+    "authors": [
+        {
+            "name": "Maxim Kalinin",
+            "email": "maks.kalinin2000@mail.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload-dev": {
+        "psr-4": {
+            "Kalinin\\Framework\\Tests\\": "tests"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Kalinin\\Framework\\": "src"
+        }
+    },
+    "require": {
+        "nikic/fast-route": "^1.3",
+        "league/container": "4.2.0",
+        "symfony/dotenv": "v6.3.0",
+        "filp/whoops": "^2.15",
+        "twig/twig": "v3.7.0",
+        "doctrine/dbal": "^3.7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "10.5.x-dev",
+        "symfony/var-dumper": "6.4.x-dev"
+    }
+}

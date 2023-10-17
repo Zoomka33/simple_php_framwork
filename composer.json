@@ -1,0 +1,20 @@
+{
+    "autoload": {
+        "psr-4": {
+            "App\\": "app"
+        }
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^6.3",
+        "laravel/pint": "^1.13"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "framework"
+        }
+    ],
+    "require": {
+        "kalinin/framework": "dev-main"
+    }
+}
