@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kalinin\Framework\Controllers;
 
+use Kalinin\Framework\Http\Request;
 use Kalinin\Framework\Http\Response;
 use Psr\Container\ContainerInterface;
 use Twig\Environment;
@@ -11,6 +12,8 @@ use Twig\Environment;
 class AbstractController
 {
     protected ?ContainerInterface $container = null;
+    protected ?Request $request = null;
+
 
     public function setContainer(ContainerInterface $container)
     {
@@ -31,5 +34,10 @@ class AbstractController
         $response->setContent($content);
 
         return $response;
+    }
+
+    public function setRequest(Request $request): void
+    {
+        $this->request = $request;
     }
 }

@@ -1,0 +1,15 @@
+{% extends 'default.html.twig' %}
+
+{% block main %}
+    <form action="/posts" method="post">
+        <div class="form-group">
+            <label for="title">Заголовок</label>
+            <input value="{{ post.id }}" type="text" class="form-control" id="title" name="title" placeholder="Новый пост">
+            <input value="{{ post.title }}" type="text" class="form-control" id="title" name="title" placeholder="Новый пост">
+        </div>
+        <div class="form-group">
+            <label for="name">Текст</label>
+            <input value="{{ post.content }}" type="text" class="form-control" id="name" name="content" placeholder="Text">
+        </div>
+    </form>
+{% endblock %}

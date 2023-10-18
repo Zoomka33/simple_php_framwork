@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kalinin\Framework\Console\Commands;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Kalinin\Framework\Console\CommandInterface;
 use Doctrine\DBAL\Schema\Schema;
@@ -17,7 +16,8 @@ class MigrateCommand implements CommandInterface
     private const MIGRATION_TABLE = 'migrations';
 
     public function __construct(
-        private Connection $connection
+        private Connection $connection,
+        private string $migration_path
     ) {
     }
 
@@ -25,12 +25,29 @@ class MigrateCommand implements CommandInterface
     {
 
         try {
+            $this->connection->setAutoCommit(false);
             //проверка таблицы миграций
             $this->createMigrationTable();
+
             $this->connection->beginTransaction();
 
             $appliedMigrations = $this->getApplyMigrations();
-            dd($appliedMigrations);
+            $migrationFiles = $this->getMigrationsFiles();
+            $migrationsToApply = array_values(array_diff($migrationFiles, $appliedMigrations));
+
+            $schema = new Schema();
+
+            foreach ($migrationsToApply as $migrate) {
+                $migrationInstance = require $this->migration_path . "/$migrate";
+                $migrationInstance->up($schema);
+
+                $this->addMigration($migrate);
+            }
+            $sqlArray = $schema->toSql($this->connection->getDatabasePlatform());
+            foreach ($sqlArray as $sql) {
+                $this->connection->executeQuery($sql);
+            }
+
             $this->connection->commit();
 
         } catch (\Throwable $e) {
@@ -39,6 +56,7 @@ class MigrateCommand implements CommandInterface
 
             throw $e;
         }
+        $this->connection->setAutoCommit(true);
 //        echo "Foo value is {$parameters['foo']}";
         return 0;
     }
@@ -79,5 +97,24 @@ class MigrateCommand implements CommandInterface
             ->from(self::MIGRATION_TABLE)
             ->executeQuery()
             ->fetchFirstColumn();
+    }
+
+    private function getMigrationsFiles(): array
+    {
+        $migrationsFiles = scandir($this->migration_path);
+        return array_filter($migrationsFiles, function ($fileName) {
+           return !in_array($fileName, ['.', '..']);
+        });
+        return array_values($migrationsFiles);
+    }
+
+    private function addMigration(string $migration): void
+    {
+        $queryBuilder = $this->connection->createQueryBuilder();
+
+        $queryBuilder->insert(self::MIGRATION_TABLE)
+            ->values(['migration' => ':migration'])
+            ->setParameter('migration', $migration)
+            ->executeQuery();
     }
 }

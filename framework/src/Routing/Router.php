@@ -6,6 +6,7 @@ namespace Kalinin\Framework\Routing;
 
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use Kalinin\Framework\Controllers\AbstractController;
 use Kalinin\Framework\Http\Request;
 use Kalinin\Framework\Routing\Exception\MethodNotAllowedException;
 use Kalinin\Framework\Routing\Exception\RouteNotFoundException;
@@ -24,8 +25,15 @@ class Router implements RouterInterface
         if (is_array($handler)) {
             [$controllerId, $method] = $handler;
             $controller = $container->get($controllerId);
+
+            if (is_subclass_of($controller, AbstractController::class)) {
+                $controller->setRequest($request);
+            }
+
             $handler = [$controller, $method];
         }
+
+        $vars['request'] = $request;
 
         return [$handler, $vars];
     }

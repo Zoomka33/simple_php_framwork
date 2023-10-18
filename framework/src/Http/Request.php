@@ -35,4 +35,14 @@ class Request
     {
         return $this->server['REQUEST_METHOD'];
     }
+
+    public function getGetParams(): array
+    {
+        return $this->getParams;
+    }
+
+    public function getPostData(): array
+    {
+        return $this->postData;
+    }
 }
