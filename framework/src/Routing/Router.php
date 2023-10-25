@@ -33,7 +33,8 @@ class Router implements RouterInterface
             $handler = [$controller, $method];
         }
 
-        $vars['request'] = $request;
+        //Раскомментировать если нужно передавать Request через аргументы метода
+//        $vars['request'] = $request;
 
         return [$handler, $vars];
     }

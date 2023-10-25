@@ -23,4 +23,14 @@ class Response
     {
         echo $this->content;
     }
+
+    public function getHeader(string $key)
+    {
+        return $this->header[$key];
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
 }

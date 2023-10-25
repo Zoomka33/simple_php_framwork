@@ -6,8 +6,14 @@ use Kalinin\Framework\Console\Commands\MigrateCommand;
 use Kalinin\Framework\Controllers\AbstractController;
 use Kalinin\Framework\Dbal\ConnectionFactory;
 use Kalinin\Framework\Http\Kernel;
+use Kalinin\Framework\Http\Middleware\RequestHandler;
+use Kalinin\Framework\Http\Middleware\RequestHandlerInterface;
+use Kalinin\Framework\Http\Middleware\RouterDispatch;
 use Kalinin\Framework\Routing\Router;
 use Kalinin\Framework\Routing\RouterInterface;
+use Kalinin\Framework\Session\Session;
+use Kalinin\Framework\Session\SessionInterface;
+use Kalinin\Framework\Template\TwigFactory;
 use League\Container\Argument\Literal\ArrayArgument;
 use League\Container\Argument\Literal\StringArgument;
 use League\Container\Container;
@@ -44,15 +50,25 @@ $container->extend(RouterInterface::class)
         new ArrayArgument($routes),
     ]);
 
-$container->add(Kernel::class)
-    ->addArgument(RouterInterface::class)
+$container->add(RequestHandlerInterface::class, RequestHandler::class)
     ->addArgument($container);
 
-$container->addShared('twig-loader', FilesystemLoader::class)
-    ->addArgument(new StringArgument($viewsPath));
+$container->add(Kernel::class)
+    ->addArgument(RouterInterface::class)
+    ->addArgument($container)
+    ->addArgument(RequestHandlerInterface::class);
 
-$container->addShared('twig', Environment::class)
-    ->addArgument('twig-loader');
+$container->addShared(SessionInterface::class, Session::class);
+
+$container->add('twig-factory', TwigFactory::class)
+    ->addArguments([
+        new StringArgument($viewsPath),
+        SessionInterface::class
+    ]);
+
+$container->addShared('twig', function () use ($container) {
+   return $container->get('twig-factory')->create();
+});
 
 $container->inflector(AbstractController::class)
     ->invokeMethod('setContainer', [$container]);
@@ -74,5 +90,11 @@ $container->add(ConsoleKernel::class)
 $container->add('console:migrate', MigrateCommand::class)
     ->addArgument(Connection::class)
     ->addArgument(new StringArgument(BASE_PATH . '/database/migrations'));
+
+
+//middleware
+$container->add(RouterDispatch::class)
+    ->addArgument(RouterInterface::class)
+    ->addArgument($container);
 
 return $container;
